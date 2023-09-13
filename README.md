@@ -1,7 +1,11 @@
-# Uses GitHub Actions For Dumping
+# Android Firmware Dumper Workflow
 
-# Dumps At --> 
-# https://www.opencode.net/Neil-Firmware-Dumps
+A fully automated workflow to dump your Android firmware.
 
-# Notification --> 
-# https://t.me/neil_dumps
+## Access The Dumps
+
+[GitLab Group](https://gitlab.com/pratham-firmware-dumps)
+
+## Receive Notifications
+
+[Telegram Channel](https://t.me/PrathamsDumps)
