@@ -1,0 +1,43 @@
+name: Commit
+
+on:
+  workflow_dispatch:
+    inputs:
+      firmware-link:
+        description: "A direct download link for the firmware file that is to be dumped."
+        required: true
+
+env:
+  FIRMWARE_LINK: ${{ github.event.inputs.firmware-link }}
+  TZ: Asia/Kolkata
+
+jobs:
+  Commit-Push:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Initialize the git properties
+        run: |
+          git config --global user.name "${{ secrets.GITHUBUSER }}"
+          git config --global user.email "${{ secrets.GITHUBEMAIL }}"
+
+      - name: Check for duplication
+        run: |
+          git clone --depth 1 -b push https://"${{ secrets.GITHUBUSER }}":"${{ secrets.GITHUBTOKEN }}"@github.com/prathamdubey2005-alt/firmware-dumper-workflow.git push
+
+          existing_link=$(awk '/^[[:blank:]]*LINK:/{print $2}' push/.github/workflows/dumper.yml)
+          if [[ $existing_link == $FIRMWARE_LINK ]]; then
+            echo "The workflow was not triggered! The link has already been dumped."
+            exit 1
+          fi
+
+      - name: Trigger the workflow
+        working-directory: push
+        run: |
+          cd .github/workflows/
+          sed -i "s|^\( *LINK:\).*|\1 $FIRMWARE_LINK|" dumper.yml
+          cd -
+
+          git add .github/workflows/dumper.yml
+          git commit -m "Dump $(basename "$FIRMWARE_LINK")"
+          git push
