@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       link:
-        description: 'Firmware Link'
+        description: "A direct download link for the firmware file that is to be dumped."
         required: true
 
 env:
@@ -13,40 +13,40 @@ env:
 
 jobs:
   Firmware-Dump:
-      runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04
 
-      steps:
-
-      - name: Cleanup Space
+    steps:
+      - name: Free up some storage space
         uses: rokibhasansagar/slimhub_actions@main
 
-      - name: Cloning Dumper
+      - name: Clone the dumper script
         run: |
-             git clone https://github.com/neilchetty/Dumper-Scripts dumper --depth=1
+          git clone --depth 1 -b main https://github.com/prathamdubey2005-alt/firmware-dumper-script.git dumper
 
-      - name: SettingUp SSH Keys
+      - name: Set up all of the SSH keys
         run: |
-             mkdir -p ~/.ssh
-             ssh-keyscan -t rsa www.opencode.net >> ~/.ssh/known_hosts
-             echo "${{ secrets.SSHKEYPRIVATE }}" > ~/.ssh/id_rsa
-             echo "${{ secrets.SSHKEYPUBLIC }}" > ~/.ssh/id_rsa.pub
-             chmod 600 ~/.ssh/id_rsa
-             chmod 600 ~/.ssh/id_rsa.pub
-             ssh-agent -s
-             eval "$(ssh-agent -s)"
-             ssh-add ~/.ssh/id_rsa
+          mkdir -p ~/.ssh
+          ssh-keyscan -t rsa "${{ secrets.GITLABINSTANCE }}" >> ~/.ssh/known_hosts
+          echo "${{ secrets.SSHKEYPRIVATE }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSHKEYPUBLIC }}" > ~/.ssh/id_rsa.pub
+          chmod 600 ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa.pub
+          ssh-agent -s
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
 
-      - name: Installing Requirements
+      - name: Install all of the requirements
+        working-directory: dumper
         run: |
-             cd dumper
-             bash setup.sh
+          bash setup.sh
 
-      - name: Firmware is Dumping
+      - name: Dump the firmware
+        working-directory: dumper
         run: |
-             cd dumper
-             export PUSH_TO_GITLAB=true
-             echo "www.opencode.net" > .gitlab_instance
-             echo "Neil-Firmware-Dumps" > .gitlab_group
-             echo "${{ secrets.GITLABTOKEN }}" > .gitlab_token
-             echo "${{ secrets.TGTOKEN }}" > .tg_token
-             bash dumper.sh $LINK
+          export PUSH_TO_GITLAB=true
+          echo "${{ secrets.GITLABINSTANCE }}" > .gitlab_instance
+          echo "${{ secrets.GITLABGROUP }}" > .gitlab_group
+          echo "${{ secrets.GITLABTOKEN }}" > .gitlab_token
+          echo "${{ secrets.TGCHAT }}" > .tg_chat
+          echo "${{ secrets.TGTOKEN }}" > .tg_token
+          bash dumper.sh $LINK
